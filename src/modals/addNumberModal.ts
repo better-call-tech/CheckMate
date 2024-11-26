@@ -8,8 +8,7 @@ export default new Modal({
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true })
         
-        // eslint-disable-next-line no-unused-vars
-        const [_, userId, phoneNumber] = interaction.customId.split('_')
+        const phoneNumber = interaction.customId.split('_')[1]
         const confirmation = interaction.fields.getTextInputValue('confirmation')
 
         if (confirmation.toUpperCase() !== 'CONFIRM') {
@@ -26,16 +25,36 @@ export default new Modal({
         }
 
         try {
-            await prisma.user.upsert({
-                where: { discordId: userId },
-                update: { phoneNumber },
-                create: { discordId: userId, phoneNumber, username: userId }
+            const verifiedNumbers = await prisma.verifiedNumbers.findFirst({
+                where: { id: 1 }
+            })
+
+            if (verifiedNumbers?.numbers.includes(phoneNumber)) {
+                await interaction.editReply({
+                    embeds: [createEmbed({
+                        title: '❌ Number Already Exists',
+                        description: 'This number is already in the verified numbers list.',
+                        color: '#ff0000',
+                        footer: 'Admin System',
+                        timestamp: true
+                    })]
+                })
+                return
+            }
+
+            await prisma.verifiedNumbers.update({
+                where: { id: 1 },
+                data: {
+                    numbers: {
+                        push: phoneNumber
+                    }
+                }
             })
 
             await interaction.editReply({
                 embeds: [createEmbed({
                     title: '✅ Number Added',
-                    description: `Successfully added phone number to <@${userId}>.`,
+                    description: 'Successfully added number to verified numbers list.',
                     fields: [
                         {
                             name: '📱 Phone Number',

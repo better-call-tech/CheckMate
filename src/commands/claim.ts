@@ -36,7 +36,6 @@ export default new Command({
                         placeholder: '2019824588',
                         style: TextInputStyle.Short,
                         required: true,
-                        minLength: 10,
                         maxLength: 15
                     }),
                     createTextInput({

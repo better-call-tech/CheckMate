@@ -8,7 +8,7 @@ export default new Modal({
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true })
         
-        const userId = interaction.customId.split('_')[1]
+        const phoneNumber = interaction.customId.split('_')[1]
         const confirmation = interaction.fields.getTextInputValue('confirmation')
 
         if (confirmation.toUpperCase() !== 'CONFIRM') {
@@ -25,17 +25,43 @@ export default new Modal({
         }
 
         try {
-            const user = await prisma.user.findUnique({ where: { discordId: userId } })
-            if (user?.phoneNumber) {
-                await prisma.user.update({
-                    where: { discordId: userId },
-                    data: { phoneNumber: null }
+            const verifiedNumbers = await prisma.verifiedNumbers.findFirst({
+                where: { id: 1 }
+            })
+
+            if (!verifiedNumbers?.numbers.includes(phoneNumber)) {
+                await interaction.editReply({
+                    embeds: [createEmbed({
+                        title: '❌ Number Not Found',
+                        description: 'This number is not in the verified numbers list.',
+                        color: '#ff0000',
+                        footer: 'Admin System',
+                        timestamp: true
+                    })]
                 })
+                return
             }
+
+            await prisma.verifiedNumbers.update({
+                where: { id: 1 },
+                data: {
+                    numbers: {
+                        set: verifiedNumbers.numbers.filter(num => num !== phoneNumber)
+                    }
+                }
+            })
+
             await interaction.editReply({
                 embeds: [createEmbed({
                     title: '✅ Number Removed',
-                    description: `Successfully removed phone number from <@${userId}>.`,
+                    description: 'Successfully removed number from verified numbers list.',
+                    fields: [
+                        {
+                            name: '📱 Phone Number',
+                            value: phoneNumber,
+                            inline: true
+                        }
+                    ],
                     color: '#00ff00',
                     footer: 'Admin System',
                     timestamp: true
