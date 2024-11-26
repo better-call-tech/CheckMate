@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits, 
 import Command from '../templates/command.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
+import { config } from '@/config.ts';
 
 export function validNumberFormat(phoneNumber: string): boolean {
     const regex = /^\+?\d{9,15}$/;
@@ -104,8 +105,8 @@ export default new Command({
 
                 const member = existingEntry.discordId ? await interaction.guild?.members.fetch(existingEntry.discordId) : null;
                 if (member) {
-                    await member.roles.remove('1310751749023207454');
-                    await member.roles.add('1310751635235934288');
+                    await member.roles.remove(config.PLAN_ROLE_ID);
+                    await member.roles.add(config.UNVERIFIED_ROLE_ID);
                 }
 
                 await interaction.reply({

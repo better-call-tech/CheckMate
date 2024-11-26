@@ -2,6 +2,7 @@ import { ModalSubmitInteraction } from 'discord.js'
 import Modal from '../templates/modal.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
+import { config } from '@/config.ts'
 
 export default new Modal({
     customId: 'forceUnclaim',
@@ -50,8 +51,8 @@ export default new Modal({
             const member = userId ? await interaction.guild?.members.fetch(userId) : null;
             if (member) {
                 try {
-                    await member.roles.remove('1310751749023207454')
-                    await member.roles.add('1310751635235934288')
+                    await member.roles.remove(config.PLAN_ROLE_ID)
+                    await member.roles.add(config.UNVERIFIED_ROLE_ID)
                 } catch (roleError) {
                     console.error('Error updating roles:', roleError)
                 }

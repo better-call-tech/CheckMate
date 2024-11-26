@@ -3,6 +3,7 @@ import Command from '../templates/command.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
 import { isValidPhoneNumber } from '@/utils/verificationUtils.ts'
+import { config } from '@/config.ts'
 
 
 export default new Command({
@@ -39,8 +40,8 @@ export default new Command({
             }
 
             const member = await interaction.guild?.members.fetch(interaction.user.id)
-            const hasUnverified = member?.roles.cache.has('1310751635235934288')
-            const hasPlanPayer = member?.roles.cache.has('1310751749023207454')
+            const hasUnverified = member?.roles.cache.has(config.UNVERIFIED_ROLE_ID)
+            const hasPlanPayer = member?.roles.cache.has(config.PLAN_ROLE_ID)
             
             const isPlanPayer = await isValidPhoneNumber(user.phoneNumber)
             let roleUpdateStatus = ''
@@ -48,20 +49,20 @@ export default new Command({
             if (member) {
                 if (isPlanPayer) {
                     if (hasUnverified) {
-                        await member.roles.remove('1310751635235934288')
+                        await member.roles.remove(config.UNVERIFIED_ROLE_ID)
                         roleUpdateStatus += '🔄 Removed: Unverified\n'
                     }
                     if (!hasPlanPayer) {
-                        await member.roles.add('1310751749023207454')
+                        await member.roles.add(config.PLAN_ROLE_ID)
                         roleUpdateStatus += '✨ Added: Plan Payer\n'
                     }
                 } else {
                     if (!hasUnverified) {
-                        await member.roles.add('1310751635235934288')
+                        await member.roles.add(config.UNVERIFIED_ROLE_ID)
                         roleUpdateStatus += '⚠️ Added: Unverified\n'
                     }
                     if (hasPlanPayer) {
-                        await member.roles.remove('1310751749023207454')
+                        await member.roles.remove(config.PLAN_ROLE_ID)
                         roleUpdateStatus += '❌ Removed: Plan Payer\n'
                     }
                 }

@@ -18,7 +18,12 @@ export default new Command({
 
         try {
             const userData = await prisma.user.findFirst({
-                where: { phoneNumber }
+                where: {
+                    OR: [
+                        { phoneNumber },
+                        { ownedNumbers: { has: phoneNumber } }
+                    ]
+                }
             });
 
             if (!userData) {
@@ -38,31 +43,46 @@ export default new Command({
             let components: ActionRowBuilder<ButtonBuilder>[] = [];
             let fields = [
                 {
-                    name: '📱 Phone Number',
-                    value: phoneNumber,
+                    name: '📱 Main Phone Number',
+                    value: userData.phoneNumber ?? 'Not provided',
                     inline: true
                 }
             ];
+
+            // Add owned numbers
+            if (userData.ownedNumbers && userData.ownedNumbers.length > 0) {
+                fields.push({
+                    name: '📞 Other Owned Phone Numbers',
+                    value: userData.ownedNumbers.join(', '),
+                    inline: false
+                });
+            } else {
+                fields.push({
+                    name: '📞 Other Owned Phone Numbers',
+                    value: 'None',
+                    inline: false
+                });
+            }
 
             // Add basic information fields
             if (userData.fullName) {
                 fields.push({
                     name: '👤 Full Name',
-                    value: userData.fullName,
+                    value: userData.fullName ?? 'Not provided',
                     inline: true
                 });
             }
             if (userData.email) {
                 fields.push({
                     name: '📧 Email',
-                    value: userData.email,
+                    value: userData.email ?? 'Not provided',
                     inline: true
                 });
             }
             if (userData.address) {
                 fields.push({
                     name: '📍 Address',
-                    value: userData.address,
+                    value: userData.address ?? 'Not provided',
                     inline: false
                 });
             }

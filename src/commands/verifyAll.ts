@@ -3,6 +3,7 @@ import Command from '../templates/command.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
 import { isValidPhoneNumber } from '@/utils/verificationUtils.ts';
+import { config } from '@/config.ts';
 export default new Command({
     data: new SlashCommandBuilder()
         .setName('verify-all')
@@ -37,19 +38,19 @@ export default new Command({
                     const member = await interaction.guild?.members.fetch(user.discordId ?? '');
                     if (!member) continue;
 
-                    const hasUnverified = member.roles.cache.has('1310751635235934288');
-                    const hasPlanPayer = member.roles.cache.has('1310751749023207454');
+                    const hasUnverified = member.roles.cache.has(config.UNVERIFIED_ROLE_ID);
+                    const hasPlanPayer = member.roles.cache.has(config.PLAN_ROLE_ID);
                     
                     const isValid = user.phoneNumber && await isValidPhoneNumber(user.phoneNumber);
                     
                     if (isValid) {
                         results.verified++;
                         if (hasUnverified) {
-                            await member.roles.remove('1310751635235934288');
+                            await member.roles.remove(config.UNVERIFIED_ROLE_ID);
                             results.roleUpdates++;
                         }
                         if (!hasPlanPayer) {
-                            await member.roles.add('1310751749023207454');
+                            await member.roles.add(config.PLAN_ROLE_ID);
                             results.roleUpdates++;
                         }
                         await prisma.user.update({
@@ -62,11 +63,11 @@ export default new Command({
                     } else {
                         results.unverified++;
                         if (!hasUnverified) {
-                            await member.roles.add('1310751635235934288');
+                            await member.roles.add(config.UNVERIFIED_ROLE_ID);
                             results.roleUpdates++;
                         }
                         if (hasPlanPayer) {
-                            await member.roles.remove('1310751749023207454');
+                            await member.roles.remove(config.PLAN_ROLE_ID);
                             results.roleUpdates++;
                         }
                         await prisma.user.update({
