@@ -31,6 +31,19 @@ export default new Modal({
                 .filter(num => num.length > 0)
             const planTypeInput = interaction.fields.getTextInputValue('planType')
             
+            if (isNaN(Number(planTypeInput)) || Number(planTypeInput) < 1 || Number(planTypeInput) > 8) {
+                await interaction.editReply({
+                    embeds: [createEmbed({
+                        title: '❌ Invalid Plan Type',
+                        description: 'Please select a valid plan type between 1 and 8.',
+                        color: '#ff0000',
+                        footer: 'Plan Selection',
+                        timestamp: true
+                    })],
+                });
+                return;
+            }
+
             const planType = PLAN_TYPES[planTypeInput as keyof typeof PLAN_TYPES]
             if (!planType) {
                 throw new Error('Invalid plan type selected')
