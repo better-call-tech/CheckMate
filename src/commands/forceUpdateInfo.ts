@@ -8,30 +8,43 @@ export default new Command({
         .setName('force-update-info')
         .setDescription('Admin: Force update user information')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
-        .addUserOption(option => 
-            option.setName('user')
-                .setDescription('User to update information for')
+        .addStringOption(option =>
+            option.setName('phone')
+                .setDescription('Phone number to search for')
                 .setRequired(true)) as SlashCommandBuilder,
 
     async execute(interaction: ChatInputCommandInteraction) {
-
-        const targetUser = interaction.options.getUser('user', true);
+        const phoneNumber = interaction.options.getString('phone', true);
 
         try {
-            const userData = await prisma.user.findUnique({
-                where: { discordId: targetUser.id }
+            const userData = await prisma.user.findFirst({
+                where: { phoneNumber }
             });
 
+            if (!userData) {
+                await interaction.reply({
+                    embeds: [createEmbed({
+                        title: '❌ User Not Found',
+                        description: 'No user found with this phone number.',
+                        color: '#ff0000',
+                        footer: 'Admin System',
+                        timestamp: true
+                    })],
+                    ephemeral: true
+                });
+                return;
+            }
+
             const modal = new ModalBuilder()
-                .setCustomId(`forceUpdateInfo_${targetUser.id}`)
-                .setTitle(`Update Info: ${targetUser.username}`);
+                .setCustomId(`forceUpdateInfo_${userData.discordId}`)
+                .setTitle(`Update Info: ${userData.username}`);
 
             const phoneInput = new TextInputBuilder()
                 .setCustomId('phoneNumber')
                 .setLabel('Phone Number')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
-                .setValue(userData?.phoneNumber || '')
+                .setValue(userData.phoneNumber || '')
                 .setPlaceholder('Enter phone number');
 
             const emailInput = new TextInputBuilder()
@@ -39,7 +52,7 @@ export default new Command({
                 .setLabel('Email')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
-                .setValue(userData?.email || '')
+                .setValue(userData.email || '')
                 .setPlaceholder('Enter email');
 
             const fullNameInput = new TextInputBuilder()
@@ -47,7 +60,7 @@ export default new Command({
                 .setLabel('Full Name')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
-                .setValue(userData?.fullName || '')
+                .setValue(userData.fullName || '')
                 .setPlaceholder('Enter full name');
 
             const addressInput = new TextInputBuilder()
@@ -55,14 +68,23 @@ export default new Command({
                 .setLabel('Address')
                 .setStyle(TextInputStyle.Paragraph)
                 .setRequired(false)
-                .setValue(userData?.address || '')
+                .setValue(userData.address || '')
                 .setPlaceholder('Enter address');
+
+            const ownedNumbersInput = new TextInputBuilder()
+                .setCustomId('ownedNumbers')
+                .setLabel('Owned Numbers (comma-separated)')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(false)
+                .setValue(userData.ownedNumbers.join(', ') || '')
+                .setPlaceholder('Enter owned numbers, separated by commas');
 
             const rows = [
                 new ActionRowBuilder<TextInputBuilder>().addComponents(phoneInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(emailInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(fullNameInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(addressInput),
+                new ActionRowBuilder<TextInputBuilder>().addComponents(ownedNumbersInput)
             ];
 
             modal.addComponents(rows);

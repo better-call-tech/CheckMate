@@ -10,14 +10,23 @@ export default new Modal({
         
         const userId = interaction.customId.split('_')[1]
         
-        const updateData: Record<string, string | null> = {
+        const updateData: Record<string, any> = {
             phoneNumber: interaction.fields.getTextInputValue('phoneNumber') || null,
             email: interaction.fields.getTextInputValue('email') || null,
             fullName: interaction.fields.getTextInputValue('fullName') || null,
             address: interaction.fields.getTextInputValue('address') || null,
-            dateOfBirth: interaction.fields.getTextInputValue('dateOfBirth') || null
         }
 
+        // Handle owned numbers array
+        const ownedNumbersInput = interaction.fields.getTextInputValue('ownedNumbers')
+        if (ownedNumbersInput) {
+            updateData.ownedNumbers = ownedNumbersInput
+                .split(',')
+                .map(num => num.trim())
+                .filter(num => num.length > 0)
+        }
+
+        // Remove null values
         Object.keys(updateData).forEach(key => 
             updateData[key] === null && delete updateData[key]
         )
@@ -25,30 +34,54 @@ export default new Modal({
         try {
             const updatedUser = await prisma.user.update({
                 where: { discordId: userId },
-                data: {
-                    ...updateData,
-                    updatedAt: new Date()
-                }
+                data: updateData
             })
 
-            const fields = Object.entries(updateData).map(([key, value]) => ({
-                name: key.charAt(0).toUpperCase() + key.slice(1),
-                value: value || 'Not set',
-                inline: true
-            }))
+            const fields = [
+                {
+                    name: 'Phone Number',
+                    value: updatedUser.phoneNumber || 'Not set',
+                    inline: true
+                },
+                {
+                    name: 'Email',
+                    value: updatedUser.email || 'Not set',
+                    inline: true
+                },
+                {
+                    name: 'Full Name',
+                    value: updatedUser.fullName || 'Not set',
+                    inline: true
+                },
+                {
+                    name: 'Address',
+                    value: updatedUser.address || 'Not set',
+                    inline: false
+                },
+                {
+                    name: 'Owned Numbers',
+                    value: updatedUser.ownedNumbers.length > 0 
+                        ? updatedUser.ownedNumbers.join(', ')
+                        : 'None',
+                    inline: false
+                },
+                {
+                    name: 'Verification Status',
+                    value: `${updatedUser.isVerified ? '✅ Verified' : '❌ Unverified'}`,
+                    inline: true
+                },
+                {
+                    name: 'Last Updated',
+                    value: updatedUser.updatedAt.toLocaleString(),
+                    inline: true
+                }
+            ]
 
             await interaction.editReply({
                 embeds: [createEmbed({
                     title: '✅ User Information Updated',
                     description: `Successfully updated information for <@${userId}>`,
-                    fields: [
-                        ...fields,
-                        {
-                            name: 'Last Updated',
-                            value: updatedUser.updatedAt.toLocaleString(),
-                            inline: false
-                        }
-                    ],
+                    fields,
                     color: '#00ff00',
                     footer: 'Admin System',
                     timestamp: true
