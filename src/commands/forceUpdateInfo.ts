@@ -36,8 +36,8 @@ export default new Command({
             }
 
             const modal = new ModalBuilder()
-                .setCustomId(`forceUpdateInfo_${userData.discordId}`)
-                .setTitle(`Update Info: ${userData.username}`);
+                .setCustomId(`forceUpdateInfo_${phoneNumber}`)
+                .setTitle(`Update Info: ${phoneNumber}`);
 
             const phoneInput = new TextInputBuilder()
                 .setCustomId('phoneNumber')

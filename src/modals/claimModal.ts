@@ -19,14 +19,54 @@ export default new Modal({
         const hasPlanPayer = member?.roles.cache.has('1310751749023207454')
         
         try {
-            await prisma.user.update({
-                where: { discordId: interaction.user.id },
-                data: {
-                    phoneNumber,
-                    email,
-                    lastVerified: new Date()
+            const user = await prisma.user.findFirst({
+                where: { phoneNumber }
+            })
+            if (user && user.discordId && user.discordId !== interaction.user.id) {
+                await interaction.editReply({
+                    embeds: [createEmbed({
+                        title: '❌ Number Already Claimed',
+                        description: 'This number is already claimed by another user on the server.',
+                        color: '#ff0000',
+                        footer: 'Claim System',
+                        timestamp: true
+                    })]
+                })
+                return
+            }
+            const oldNumbers = await prisma.user.findMany({
+                where: { 
+                    discordId: interaction.user.id,
+                    NOT: { phoneNumber }
                 }
             })
+
+            if (oldNumbers.length > 0) {
+                await prisma.user.deleteMany({
+                    where: { id: { in: oldNumbers.map(number => number.id) } }
+                })
+            }
+            if (!user) {
+                await prisma.user.create({
+                    data: {
+                        phoneNumber,
+                        email,
+                        username: interaction.user.username,
+                        discordId: interaction.user.id,
+                        lastVerified: new Date()
+                    }
+                })
+            } else {
+                await prisma.user.update({
+                    where: { id: user.id },
+                data: {
+                    email,
+                        username: interaction.user.username,
+                        discordId: interaction.user.id,
+                        lastVerified: new Date()
+                    }
+                })
+            }
 
             const isPlanPayer = await isValidPhoneNumber(phoneNumber)
             let roleUpdateStatus = ''

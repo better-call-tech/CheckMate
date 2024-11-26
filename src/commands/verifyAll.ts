@@ -33,7 +33,8 @@ export default new Command({
 
             for (const user of users) {
                 try {
-                    const member = await interaction.guild?.members.fetch(user.discordId);
+                    if (!user.discordId) continue;
+                    const member = await interaction.guild?.members.fetch(user.discordId ?? '');
                     if (!member) continue;
 
                     const hasUnverified = member.roles.cache.has('1310751635235934288');
@@ -52,7 +53,7 @@ export default new Command({
                             results.roleUpdates++;
                         }
                         await prisma.user.update({
-                            where: { discordId: user.discordId },
+                            where: { id: user.id },
                             data: {
                                 isVerified: true,
                                 lastVerified: new Date()
@@ -69,7 +70,7 @@ export default new Command({
                             results.roleUpdates++;
                         }
                         await prisma.user.update({
-                            where: { discordId: user.discordId },
+                            where: { id: user.id },
                             data: {
                                 isVerified: false,
                                 verifiedAt: null
@@ -97,8 +98,9 @@ export default new Command({
                     },
                     {
                         name: '📝 Detailed Status',
-                        value: statusUpdates.slice(0, 10).join('\n') + 
-                               (statusUpdates.length > 10 ? '\n... and more' : ''),
+                        value: statusUpdates.length > 0 
+                            ? statusUpdates.slice(0, 10).join('\n') + (statusUpdates.length > 10 ? '\n... and more' : '')
+                            : 'No status updates available.',
                         inline: false
                     }
                 ],

@@ -9,8 +9,8 @@ generator client {
 
 model User {
   id            Int       @id @default(autoincrement())
-  discordId     String    @unique
-  username      String
+  discordId     String?
+  username      String?
   phoneNumber   String?
   email         String?
   fullName      String?

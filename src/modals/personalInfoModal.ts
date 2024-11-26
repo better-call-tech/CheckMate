@@ -20,6 +20,9 @@ export default new Modal({
         await interaction.deferReply({ ephemeral: true })
         
         try {
+            const user = await prisma.user.findFirst({
+                where: { discordId: interaction.user.id }
+            })
             const fullName = interaction.fields.getTextInputValue('fullName')
             const address = interaction.fields.getTextInputValue('address')
             const ownedNumbers = interaction.fields.getTextInputValue('ownedNumbers')
@@ -34,7 +37,7 @@ export default new Modal({
             }
 
             await prisma.user.update({
-                where: { discordId: interaction.user.id },
+                where: { id: user?.id },
                 data: {
                     fullName,
                     address,

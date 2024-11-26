@@ -5,7 +5,6 @@ import {
 } from 'discord.js'
 import Command from '../templates/command.ts'
 import { createCustomModal, createTextInput } from '@/utils/modalBuilder.ts'
-import { prisma } from '@/prisma/prismaClient.ts'
 
 export default new Command({
     data: new SlashCommandBuilder()
@@ -14,17 +13,6 @@ export default new Command({
 
     async execute(interaction: ChatInputCommandInteraction) {
         try {
-            
-            await prisma.user.upsert({
-                where: {
-                    discordId: interaction.user.id,
-                },
-                update: {},
-                create: {
-                    discordId: interaction.user.id,
-                    username: interaction.user.username,
-                },
-            })
 
             const modal = createCustomModal({
                 customId: 'claimModal',

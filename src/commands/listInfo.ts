@@ -6,7 +6,7 @@ import { createEmbed } from '@/utils/embedBuilder.ts'
 export default new Command({
     data: new SlashCommandBuilder()
         .setName('list-info')
-        .setDescription('Admin: List user information by phone number')
+        .setDescription('Admin: List phone number information')
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(option =>
             option.setName('phone')
@@ -24,8 +24,8 @@ export default new Command({
             if (!userData) {
                 await interaction.reply({
                     embeds: [createEmbed({
-                        title: '❌ User Not Found',
-                        description: 'No user found with this phone number.',
+                        title: '❌ Not Found',
+                        description: 'No information found for this phone number.',
                         color: '#ff0000',
                         footer: 'Admin System',
                         timestamp: true
@@ -35,94 +35,105 @@ export default new Command({
                 return;
             }
 
-            const member = await interaction.guild?.members.fetch(userData.discordId);
-            const userTag = member ? `<@${userData.discordId}>` : userData.username;
+            let components: ActionRowBuilder<ButtonBuilder>[] = [];
+            let fields = [
+                {
+                    name: '📱 Phone Number',
+                    value: phoneNumber,
+                    inline: true
+                }
+            ];
 
-            const messageButton = new ButtonBuilder()
-                .setCustomId(`sendMessage_${userData.discordId}`)
-                .setLabel('Send Message')
-                .setStyle(ButtonStyle.Primary)
-                .setEmoji('✉️');
+            // Add basic information fields
+            if (userData.fullName) {
+                fields.push({
+                    name: '👤 Full Name',
+                    value: userData.fullName,
+                    inline: true
+                });
+            }
+            if (userData.email) {
+                fields.push({
+                    name: '📧 Email',
+                    value: userData.email,
+                    inline: true
+                });
+            }
+            if (userData.address) {
+                fields.push({
+                    name: '📍 Address',
+                    value: userData.address,
+                    inline: false
+                });
+            }
+            if (userData.planType) {
+                fields.push({
+                    name: '📋 Plan Type',
+                    value: userData.planType,
+                    inline: true
+                });
+            }
 
-            const buttonRow = new ActionRowBuilder<ButtonBuilder>()
-                .addComponents(messageButton);
+            if (userData.discordId) {
+                const member = await interaction.guild?.members.fetch(userData.discordId);
+                const userTag = member ? `<@${userData.discordId}>` : 'Unknown User';
 
-            const embed = createEmbed({
-                title: `📋 User Information: ${userData.username}`,
-                description: `Displaying all stored information for ${userTag}`,
-                fields: [
+                fields.push(
                     {
-                        name: '👤 Discord User',
+                        name: '🎮 Discord Status',
+                        value: 'Claimed',
+                        inline: true
+                    },
+                    {
+                        name: '👤 Claimed By',
                         value: userTag,
-                        inline: true
-                    },
-                    {
-                        name: '📱 Phone Number',
-                        value: userData.phoneNumber || 'Not set',
-                        inline: true
-                    },
-                    {
-                        name: '📧 Email',
-                        value: userData.email || 'Not set',
-                        inline: true
-                    },
-                    {
-                        name: '👤 Full Name',
-                        value: userData.fullName || 'Not set',
-                        inline: true
-                    },
-                    {
-                        name: '📍 Address',
-                        value: userData.address || 'Not set',
-                        inline: false
-                    },
-                    {
-                        name: '📱 Owned Numbers',
-                        value: userData.ownedNumbers.length > 0 
-                            ? userData.ownedNumbers.join(', ')
-                            : 'None',
-                        inline: false
-                    },
-                    {
-                        name: '📋 Plan Type',
-                        value: userData.planType || 'Not set',
                         inline: true
                     },
                     {
                         name: '✅ Verification Status',
                         value: userData.isVerified ? 'Verified' : 'Unverified',
                         inline: true
-                    },
-                    {
-                        name: '🕒 Last Verified',
-                        value: userData.lastVerified 
-                            ? new Date(userData.lastVerified).toLocaleString()
-                            : 'Never',
-                        inline: true
-                    },
-                    {
-                        name: '📅 Account Created',
-                        value: new Date(userData.createdAt).toLocaleString(),
-                        inline: true
                     }
-                ],
-                color: '#00ff00',
+                );
+
+                const messageButton = new ButtonBuilder()
+                    .setCustomId(`sendMessage_${userData.discordId}`)
+                    .setLabel('Message User')
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji('✉️');
+
+                const buttonRow = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(messageButton);
+                components.push(buttonRow);
+            } else {
+                fields.push({
+                    name: '🎮 Discord Status',
+                    value: 'Unclaimed',
+                    inline: true
+                });
+            }
+
+            const embed = createEmbed({
+                title: `📱 Phone Number Information`,
+                description: `Displaying information for ${phoneNumber}`,
+                fields: fields,
+                color: userData.discordId ? '#00ff00' : '#ffcc00',
                 footer: 'Admin System',
                 timestamp: true
             });
 
             await interaction.reply({ 
                 embeds: [embed], 
-                components: [buttonRow],
+                components: components,
                 ephemeral: true 
             });
 
         } catch (error) {
-            console.error('Error fetching user information:', error);
+            console.error('Error fetching phone information:', error);
             await interaction.reply({
                 embeds: [createEmbed({
                     title: '❌ Error',
-                    description: 'Failed to fetch user information.',
+                    description: 'Failed to fetch phone information.',
                     color: '#ff0000',
                     footer: 'Admin System',
                     timestamp: true

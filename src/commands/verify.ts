@@ -14,7 +14,7 @@ export default new Command({
         await interaction.deferReply({ ephemeral: true })
 
         try {
-            const user = await prisma.user.findUnique({
+            const user = await prisma.user.findFirst({
                 where: { discordId: interaction.user.id }
             })
 

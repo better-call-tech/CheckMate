@@ -29,7 +29,7 @@ export default new Modal({
         }
 
         try {
-            const userData = await prisma.user.findUnique({
+            const userData = await prisma.user.findFirst({
                 where: { discordId: userId }
             })
 
@@ -37,7 +37,7 @@ export default new Modal({
 
             if (userData) {
                 await prisma.user.update({
-                    where: { discordId: userId },
+                    where: { id: userData.id },
                     data: {
                         phoneNumber: null,
                         isVerified: false,
@@ -47,7 +47,7 @@ export default new Modal({
                 })
             }
 
-            const member = await interaction.guild?.members.fetch(userId!)
+            const member = userId ? await interaction.guild?.members.fetch(userId) : null;
             if (member) {
                 try {
                     await member.roles.remove('1310751749023207454')

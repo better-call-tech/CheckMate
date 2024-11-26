@@ -8,7 +8,7 @@ export default new Modal({
     async execute(interaction: ModalSubmitInteraction) {
         await interaction.deferReply({ ephemeral: true })
         
-        const userId = interaction.customId.split('_')[1]
+        const phoneNumber = interaction.customId.split('_')[1]
         
         const updateData: Record<string, any> = {
             phoneNumber: interaction.fields.getTextInputValue('phoneNumber') || null,
@@ -17,7 +17,6 @@ export default new Modal({
             address: interaction.fields.getTextInputValue('address') || null,
         }
 
-        // Handle owned numbers array
         const ownedNumbersInput = interaction.fields.getTextInputValue('ownedNumbers')
         if (ownedNumbersInput) {
             updateData.ownedNumbers = ownedNumbersInput
@@ -26,14 +25,16 @@ export default new Modal({
                 .filter(num => num.length > 0)
         }
 
-        // Remove null values
         Object.keys(updateData).forEach(key => 
             updateData[key] === null && delete updateData[key]
         )
+        const user = await prisma.user.findFirst({
+            where: { phoneNumber }
+        })
 
         try {
             const updatedUser = await prisma.user.update({
-                where: { discordId: userId },
+                where: { id: user?.id },
                 data: updateData
             })
 
@@ -79,8 +80,8 @@ export default new Modal({
 
             await interaction.editReply({
                 embeds: [createEmbed({
-                    title: '✅ User Information Updated',
-                    description: `Successfully updated information for <@${userId}>`,
+                    title: '✅ Phone Number Information Updated',
+                    description: `Successfully updated information for ${phoneNumber}`,
                     fields,
                     color: '#00ff00',
                     footer: 'Admin System',
