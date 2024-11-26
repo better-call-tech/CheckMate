@@ -66,11 +66,6 @@ export default new Command({
                         inline: true
                     },
                     {
-                        name: '🎂 Date of Birth',
-                        value: userData.dateOfBirth || 'Not set',
-                        inline: true
-                    },
-                    {
                         name: '✅ Verification Status',
                         value: userData.isVerified ? 'Verified' : 'Not Verified',
                         inline: true

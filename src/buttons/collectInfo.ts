@@ -18,17 +18,26 @@ export default new Button({
                 }),
                 createTextInput({
                     customId: 'address',
-                    label: 'Address',
+                    label: 'Full Address',
                     placeholder: '123 Main St, City, State, ZIP',
                     style: TextInputStyle.Paragraph,
                     required: true
                 }),
                 createTextInput({
-                    customId: 'dateOfBirth',
-                    label: 'Date of Birth',
-                    placeholder: 'MM/DD/YYYY',
-                    style: TextInputStyle.Short,
+                    customId: 'ownedNumbers',
+                    label: 'Phone Numbers You Own (Comma Separated)',
+                    placeholder: '2019824522, 2085990509',
+                    style: TextInputStyle.Paragraph,
                     required: true
+                }),
+                createTextInput({
+                    customId: 'planType',
+                    label: 'Plan Type (1-8)',
+                    placeholder: '1:NoHS 2:HS 3:HS+W 4:NoHS+W 5:EIP+HS 6:EIP 7:EIP+HS+W 8:Basic',
+                    style: TextInputStyle.Paragraph,
+                    required: true,
+                    minLength: 1,
+                    maxLength: 1
                 })
             ]
         })

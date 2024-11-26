@@ -2,11 +2,8 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from 'discord.js'
 import Command from '../templates/command.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
+import { isValidPhoneNumber } from '@/utils/verificationUtils.ts'
 
-export function isValidPhoneNumber(phone: string): boolean {
-    const phoneRegex = /^(\+\d{1,3}[- ]?)?\d{10}$/
-    return phoneRegex.test(phone)
-}
 
 export default new Command({
     data: new SlashCommandBuilder()
@@ -45,7 +42,7 @@ export default new Command({
             const hasUnverified = member?.roles.cache.has('1310751635235934288')
             const hasPlanPayer = member?.roles.cache.has('1310751749023207454')
             
-            const isPlanPayer = isValidPhoneNumber(user.phoneNumber)
+            const isPlanPayer = await isValidPhoneNumber(user.phoneNumber)
             let roleUpdateStatus = ''
 
             if (member) {

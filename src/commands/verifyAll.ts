@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder, PermissionFlagsBits }
 import Command from '../templates/command.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
-import { isValidPhoneNumber } from './verify.ts';
+import { isValidPhoneNumber } from '@/utils/verificationUtils.ts';
 export default new Command({
     data: new SlashCommandBuilder()
         .setName('verify-all')
@@ -39,7 +39,7 @@ export default new Command({
                     const hasUnverified = member.roles.cache.has('1310751635235934288');
                     const hasPlanPayer = member.roles.cache.has('1310751749023207454');
                     
-                    const isValid = user.phoneNumber && isValidPhoneNumber(user.phoneNumber);
+                    const isValid = user.phoneNumber && await isValidPhoneNumber(user.phoneNumber);
                     
                     if (isValid) {
                         results.verified++;

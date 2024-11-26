@@ -15,10 +15,17 @@ model User {
   email         String?
   fullName      String?
   address       String?
-  dateOfBirth   String?
+  ownedNumbers  String[]  @default([])
+  planType      String?
   isVerified    Boolean   @default(false)
   verifiedAt    DateTime?
   lastVerified  DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
+
+model VerifiedNumbers {
+  id        Int      @id @default(autoincrement())
+  numbers   String[] // Array of verified numbers
+  updatedAt DateTime @updatedAt
 }

@@ -33,7 +33,7 @@ export default new Command({
                     createTextInput({
                         customId: 'phoneNumber',
                         label: 'Phone Number',
-                        placeholder: '+1 (555) 555-5555',
+                        placeholder: '2019824588',
                         style: TextInputStyle.Short,
                         required: true,
                         minLength: 10,

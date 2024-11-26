@@ -58,20 +58,11 @@ export default new Command({
                 .setValue(userData?.address || '')
                 .setPlaceholder('Enter address');
 
-            const dobInput = new TextInputBuilder()
-                .setCustomId('dateOfBirth')
-                .setLabel('Date of Birth')
-                .setStyle(TextInputStyle.Short)
-                .setRequired(false)
-                .setValue(userData?.dateOfBirth || '')
-                .setPlaceholder('YYYY-MM-DD');
-
             const rows = [
                 new ActionRowBuilder<TextInputBuilder>().addComponents(phoneInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(emailInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(fullNameInput),
                 new ActionRowBuilder<TextInputBuilder>().addComponents(addressInput),
-                new ActionRowBuilder<TextInputBuilder>().addComponents(dobInput)
             ];
 
             modal.addComponents(rows);
