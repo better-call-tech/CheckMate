@@ -12,7 +12,7 @@ export default new Modal({
         const [_, userId, phoneNumber] = interaction.customId.split('_')
         const confirmation = interaction.fields.getTextInputValue('confirmation')
 
-        if (confirmation !== 'CONFIRM') {
+        if (confirmation.toUpperCase() !== 'CONFIRM') {
             await interaction.editReply({
                 embeds: [createEmbed({
                     title: '❌ Operation Cancelled',

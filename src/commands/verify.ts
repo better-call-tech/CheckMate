@@ -3,7 +3,7 @@ import Command from '../templates/command.ts'
 import { prisma } from '@/prisma/prismaClient.ts'
 import { createEmbed } from '@/utils/embedBuilder.ts'
 
-function isValidPhoneNumber(phone: string): boolean {
+export function isValidPhoneNumber(phone: string): boolean {
     const phoneRegex = /^(\+\d{1,3}[- ]?)?\d{10}$/
     return phoneRegex.test(phone)
 }
